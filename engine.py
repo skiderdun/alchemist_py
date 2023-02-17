@@ -2,6 +2,7 @@
 import esper
 import tkinter as tk
 import keyboard as kb
+from dataclasses import dataclass as component
 
 class Engine(tk.Tk):
     def __init__(self, **kwargs):
@@ -13,8 +14,6 @@ class Engine(tk.Tk):
         self.name = "world"
         self.player = None
         self.title("Alchemist: " + self.name)
-        self.x_pos = 0
-        self.y_pos = 0
 
         # Kewarg processing
         if "world" in kwargs:
@@ -22,11 +21,20 @@ class Engine(tk.Tk):
         elif "player" in kwargs:
             self.player = kwargs["player"]
 
+        # add entities
+        self.player = self.world.create_entity(self.player)
+        
+        # new components
+        @component
+        class Position(object):
+            x: float = 0
+            y: float = 0
+
         ## add test sprite
         self.sprite = tk.PhotoImage(file="assets/Tiles/LIL_DUDE.png")
 
         # add processors
-        self.world.add_processor(self.Position(self.x_pos, self.y_pos, self.canvas, self.canvas.create_image(self.x_pos, self.y_pos, image=self.sprite)))
+        self.world.add_processor(self.PlayerPosition(Position, self.canvas, self.sprite))
 
     def update(self):
         self.world.process()
@@ -38,10 +46,10 @@ class Engine(tk.Tk):
         while True:
             self.update()
     
-    class Position(esper.Processor):
-        def __init__(self, x_pos, y_pos, canvas, sprite):
-            self.x_pos = x_pos
-            self.y_pos = y_pos
+    class PlayerPosition(esper.Processor):
+        def __init__(self, position , canvas, sprite):
+            self.x = position.x
+            self.y = position.y
             self.canvas = canvas
             self.sprite = sprite
             
@@ -51,11 +59,12 @@ class Engine(tk.Tk):
             up = kb.is_pressed("w")
             down = kb.is_pressed("s")
             if right:
-                self.x_pos += 1
+                self.x -= 1
             elif left:
-                self.x_pos -= 1
+                self.x += 1
             elif up:
-                self.y_pos -= 1
+                self.y -= 1
             elif down:
-                self.y_pos += 1
+                self.y += 1
+            self.canvas.create_image(self.x, self.y, image=self.sprite)
             

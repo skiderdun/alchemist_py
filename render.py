@@ -1,5 +1,4 @@
 ## renderer system
-## 1. render the scene
 
 import tkinter as tk
 from dataclasses import dataclass as component
@@ -27,4 +26,5 @@ class RendererSystem(esper.Processor):
     def process(self):
         for ent, sprite in self.world.get_component(SpriteComponent):
             img = tk.PhotoImage(file=sprite.image)
-            self.canvas.create_image(0, 0, anchor=tk.NW, image=img)
+            canvas.create_image(0, 0, anchor=tk.NW, image=img)
+            

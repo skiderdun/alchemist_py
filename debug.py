@@ -5,4 +5,3 @@ def check_type(type, value):
         raise TypeError("Expected type " + str(type) + " but got " + str(type(value))) 
     else:
         return True
-    

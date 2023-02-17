@@ -2,12 +2,12 @@
 
 import debug
 import tkinter as tk
-import engine
+from engine import Engine
 
 ## create main window
 
 def main():
-    world = engine.Engine()
+    world = Engine()
     world.mainloop()
 
 if __name__ == "__main__":

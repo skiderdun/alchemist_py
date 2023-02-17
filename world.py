@@ -24,16 +24,8 @@ world.add_component(player, player_sprite)
 world.add_processor(r.RendererSystem(world))
 
 
-## main window
-main_window = r.tk.Tk()
-main_window.title("Alchemist")
-main_window.geometry("800x600")
-
-## canvas
-canvas = r.tk.Canvas(main_window, width=800, height=600)
-canvas.pack()
 
 ## main loop
 while True:
     world.process()
-    main_window.update()
+    r.main_window.update()

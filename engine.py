@@ -67,4 +67,3 @@ class Engine(tk.Tk):
             elif down:
                 self.y += 1
             self.canvas.create_image(self.x, self.y, image=self.sprite)
-            

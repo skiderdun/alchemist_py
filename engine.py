@@ -9,7 +9,7 @@ class Engine(tk.Tk):
     def __init__(self, **kwargs):
         super().__init__()
         self.geometry("800x600")
-        self.canvas = tk.Canvas(self, width=600, height=800, bg="black")
+        self.canvas = tk.Canvas(self, width=600, height=800, bg="black", scrollregion=(-1000, -1000, 1000, 1000))
         self.world = esper.World()
         self.canvas.pack(fill=tk.BOTH, expand=True)
         self.name = "world"
@@ -27,7 +27,7 @@ class Engine(tk.Tk):
         
 
         ## add test sprite
-        self.sprite = tk.PhotoImage(file="assets/Tiles/LIL_DUDE.png")
+        self.sprite = tk.PhotoImage(file="assets/player_sprites/LIL_DUDE.png")
 
         # add processors
         

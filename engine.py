@@ -3,6 +3,7 @@ import esper
 import tkinter as tk
 import keyboard as kb
 from dataclasses import dataclass as component
+import math
 
 class Engine(tk.Tk):
     def __init__(self, **kwargs):
@@ -27,15 +28,15 @@ class Engine(tk.Tk):
         # new components
         @component
         class Position(object):
-            x: float = 0
-            y: float = 0
+            x: float = 100
+            y: float = 100
 
         ## add test sprite
         self.sprite = tk.PhotoImage(file="assets/Tiles/LIL_DUDE.png")
 
         # add processors
         self.world.add_processor(self.PlayerPosition(Position, self.canvas, self.sprite))
-
+        
     def update(self):
         self.world.process()
         self.title("Alchemist: " + self.name)

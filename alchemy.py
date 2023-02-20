@@ -30,6 +30,53 @@ import numpy.typing as npt
 #
 ########################################################################################
 
+
+############################################
+#
+#
+#   The Substance Class
+#
+#
+############################################
+
+# The Substance class determines the properties of an object.
+# The properties of an object can determine its behavior in verious biomes.
+# The properties of an object can be any of the following:
+#  - color
+#  - density
+#  - mass
+#  - volume
+#  - etc.
+
+class Substance:
+    '''The Substance class determines the properties of an object.
+    The properties of an object can determine its behavior in verious biomes.
+    The properties of an object can be any of the following:
+    - color
+    - density
+    - mass
+    - volume
+    - etc.
+    requires:
+        name: str
+            The name of the substance.
+        color: tuple
+            The color of the substance.
+        density: float
+            The density of the substance.
+        mass: float
+            The mass of the substance.
+        volume: float
+            The volume of the substance.
+        '''
+    def __init__(self, name: str, color: tuple, density: float, mass: float, volume: float):
+        self.name = name
+        self.color = color
+        self.density = density
+        self.mass = mass
+        self.volume = volume
+
+
 ############################################
 #
 #
@@ -38,33 +85,13 @@ import numpy.typing as npt
 #
 ############################################
 
-# The Species class is a framework for creating objects.
-# All objects are governed by a Species.
-# Species are collections of components assigned to an ID.
-# the species of any object can be determined by its ID.
-# the properties of any object can be determined by its components.
-# and its components can be determined by its species.
-# The components include:
-#  - properties such as color, enthalpy, entropy, etc.
-#  - rules that govern the behavior of the object an how it interacts with other objects.
+# The Species class determines the rules of an object.
+# The rules of an object can determine its behavior in verious biomes.
+# The rules of an object can be any of the following:
+#  - reproduction
+#  - death
+#  - etc.
 
-class Species:
-    '''A Species is a collection of components assigned to an ID.
-    The species of any object can be determined by its ID.
-    The properties of any object can be determined by its components.
-    And its components can be determined by its species.
-    The components include:
-        - properties such as color, enthalpy, entropy, etc.
-        - rules that govern the behavior of the object an how it interacts with other objects.
-    requires:
-        id: int
-            The ID of the Species.
-        components: list
-            A list of components that make up the Species.
-        '''
-    def __init__(self, id: int, components: list):
-        self.id = id
-        self.components = components
 
 
 ############################################
@@ -76,8 +103,23 @@ class Species:
 ############################################
 
 # The Biome class is the foundation of the alchemy system.
-# each object is governed by a Biome.
-# the state of the Biome determines the state of the object.
+# Cells are the basic unit of the Biome.
+# Cells possess a state, a substance, and a species.
+# The state of a cell can be one of the following:
+#  - empty
+#  - occupied
+#  - dead
+#  - alive
+#  - burning
+#  - frozen
+#  - etc.
+# The substance of a cell is the substance that the cell is made of.
+# The species of a cell is the species that the cell belongs to.
+# The Biome class is a collection of rules that can be applied to a grid of cells.
+# The rules are applied to each cell in the grid and the result is a new grid.
+# The rules are applied in a loop until the grid is stable.
+# Repeating the process will result in a new grid.
+
 class Biome:
     '''A Biome is a collection of rules that can be applied to a grid of cells.
     The rules are applied to each cell in the grid and the result is a new grid.
@@ -153,7 +195,7 @@ def main():
     rule_4 = lambda cell, neighbours: 1 if cell == 0 and neighbours == 3 else cell
 
     # test array: 
-    test_seed = np.random.randint(0, 2, size=(5, 5))
+    test_seed = np.random.randint(0, 2, size=(10, 10))
 
     test = Biome(0, test_seed, [rule_1, rule_2, rule_3,rule_4], size=100, scale=8)
 

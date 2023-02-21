@@ -30,70 +30,6 @@ import numpy.typing as npt
 #
 ########################################################################################
 
-
-############################################
-#
-#
-#   The Substance Class
-#
-#
-############################################
-
-# The Substance class determines the properties of an object.
-# The properties of an object can determine its behavior in verious biomes.
-# The properties of an object can be any of the following:
-#  - color
-#  - density
-#  - mass
-#  - volume
-#  - etc.
-
-class Substance:
-    '''The Substance class determines the properties of an object.
-    The properties of an object can determine its behavior in verious biomes.
-    The properties of an object can be any of the following:
-    - color
-    - density
-    - mass
-    - volume
-    - etc.
-    requires:
-        name: str
-            The name of the substance.
-        color: tuple
-            The color of the substance.
-        density: float
-            The density of the substance.
-        mass: float
-            The mass of the substance.
-        volume: float
-            The volume of the substance.
-        '''
-    def __init__(self, name: str, color: tuple, density: float, mass: float, volume: float):
-        self.name = name
-        self.color = color
-        self.density = density
-        self.mass = mass
-        self.volume = volume
-
-
-############################################
-#
-#
-#   The Species Class
-#
-#
-############################################
-
-# The Species class determines the rules of an object.
-# The rules of an object can determine its behavior in verious biomes.
-# The rules of an object can be any of the following:
-#  - reproduction
-#  - death
-#  - etc.
-
-
-
 ############################################
 #
 #
@@ -102,19 +38,6 @@ class Substance:
 #
 ############################################
 
-# The Biome class is the foundation of the alchemy system.
-# Cells are the basic unit of the Biome.
-# Cells possess a state, a substance, and a species.
-# The state of a cell can be one of the following:
-#  - empty
-#  - occupied
-#  - dead
-#  - alive
-#  - burning
-#  - frozen
-#  - etc.
-# The substance of a cell is the substance that the cell is made of.
-# The species of a cell is the species that the cell belongs to.
 # The Biome class is a collection of rules that can be applied to a grid of cells.
 # The rules are applied to each cell in the grid and the result is a new grid.
 # The rules are applied in a loop until the grid is stable.
@@ -173,6 +96,17 @@ class Biome:
 
         return new_grid
 
+############################################
+#
+#
+#   
+#
+#
+############################################
+
+# The Cell class is a single cell in the grid.
+
+
 
 ############################################
 #
@@ -216,9 +150,9 @@ def main():
         for x in range(test.grid.shape[0]):
             for y in range(test.grid.shape[1]):
                 if test.grid[x,y] == 0:
-                    squares[x+y*test.grid.shape[0]].color = (55, 55, 255)
+                    squares[x+y*test.grid.shape[0]].color = (153, 184, 152)
                 else:
-                    squares[x+y*test.grid.shape[0]].color = (255, 55, 55)
+                    squares[x+y*test.grid.shape[0]].color = (254, 206, 171)
 
     # draw the grid
     @window.event
@@ -227,7 +161,7 @@ def main():
         batch.draw()
 
     # run the game
-    pyglet.clock.schedule_interval(update, 1/10.0)
+    pyglet.clock.schedule_interval(update, 1/5.0)
     pyglet.app.run()
 
 if __name__ == '__main__':

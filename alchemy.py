@@ -30,81 +30,39 @@ import numpy.typing as npt
 #
 ########################################################################################
 
-############################################
-#
-#
-#   The Biome Class
-#
-#
-############################################
-
-# The Biome class is a collection of rules that can be applied to a grid of cells.
-# The rules are applied to each cell in the grid and the result is a new grid.
-# The rules are applied in a loop until the grid is stable.
-# Repeating the process will result in a new grid.
-
-class Biome:
-    '''A Biome is a collection of rules that can be applied to a grid of cells.
-    The rules are applied to each cell in the grid and the result is a new grid.
-    The rules are applied in a loop until the grid is stable.
-    Repeating the process will result in a new grid.
-    requires:
-        obj: int
-            The object that the Biome is for.
-        seed: numpy.ndarray
-            The seed for the Biome.
-        rules: list
-            A list of rules that can be applied to the grid.
-        size: int = 100
-            The size of the grid.
-        scale: int = 8
-            The scale of the grid.
-        '''
-    def __init__(self, species: int, seed: npt.ArrayLike, rules: list, size: int = 100, scale: int = 8):
-        self.species = species
-        self.seed = seed
-        self.rules = rules
-        self.size = size
-        self.scale = scale
-        self.grid = np.zeros((size, size), dtype=np.uint8)
-        
-        for x in range(self.grid.shape[0]):
-            for y in range(self.grid.shape[1]):
-                if self.seed.shape[0] > x and self.seed.shape[1] > y:
-                    self.grid[x,y] = self.seed[x,y]
-                else:
-                    self.grid[x,y] = 0
-    def update(self):
-        '''Update the grid.'''
-        # create a copy of the grid
-        new_grid = np.copy(self.grid)
-        for x in range(self.grid.shape[0]):
-            for y in range(self.grid.shape[1]):
-                # count the neighbours
-                neighbours = 0
-                for i in range(-1,2):
-                    for j in range(-1,2):
-                        if i == 0 and j == 0:
-                            continue
-                        if x+i < 0 or x+i >= self.grid.shape[0] or y+j < 0 or y+j >= self.grid.shape[1]:
-                            continue
-                        if self.grid[x+i,y+j] == 1 or self.grid[x+i,y+j] == 2:
-                            neighbours += 1
-                # apply the rules
-                for rule in self.rules:
-                    new_grid[x,y] = rule(self.grid[x,y], neighbours)
-
-        return new_grid
+# Performace notes:
+# - use of functions rather than dict for lookup
+# - use of numpy arrays for grid
+# - abstract rules and neighbors to allow for different rulesets and neighbor counts
+# - abstraction also allows for greater speed (no need to check for neighbors that don't exist)
+# - use list comprehension for grid updates
 
 ############################################
 #
 #
-#   
+#   Cell: Optimized for speed
 #
 #
 ############################################
 
-# The Cell class is a single cell in the grid.
+# create a function to check the neighbors of a cell via list comprehension
+def quarum_sense(grid: npt.NDArray[np.int8], x: int, y: int) -> int:
+    return sum([grid[x-1, y-1], grid[x, y-1], grid[x+1, y-1],
+                grid[x-1, y], grid[x+1, y],
+                grid[x-1, y+1], grid[x, y+1], grid[x+1, y+1]])
+
+# create function to apply the rules via list comprehension
+def update_biome(grid: npt.NDArray[np.int8]) -> npt.NDArray[np.int8]:
+    return np.array(
+        [
+        [
+        1 if quarum_sense(grid, x, y)
+        in [2, 3] else 0
+        for x in range(1, grid.shape[0]-1)
+        ]
+        for y in range(1, grid.shape[1]-1)
+        ]
+    )
 
 
 
@@ -117,21 +75,11 @@ class Biome:
 ############################################
 
 def main():
-    # The rules are functions that are applied to the grid.
-    # The rules are applied to each cell in the grid.
-    # rule 1: Any live cell with fewer than two live neighbours dies, as if caused by under-population.
-    rule_1 = lambda cell, neighbours: 0 if cell == 1 and neighbours < 2 else cell
-    # rule 2: Any live cell with two or three live neighbours lives on to the next generation.
-    rule_2 = lambda cell, neighbours: 1 if cell == 1 and (neighbours == 2 or neighbours == 3) else cell
-    # rule 3: Any live cell with more than three live neighbours dies, as if by overcrowding.
-    rule_3 = lambda cell, neighbours: 0 if cell == 1 and neighbours > 3 else cell
-    # rule 4: Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
-    rule_4 = lambda cell, neighbours: 1 if cell == 0 and neighbours == 3 else cell
 
     # test array: 
     test_seed = np.random.randint(0, 2, size=(10, 10))
 
-    test = Biome(0, test_seed, [rule_1, rule_2, rule_3,rule_4], size=100, scale=8)
+    test = Biome(1, test_seed, Cell(test_seed).update, size=800, scale=8)
 
 
     # create a window
@@ -142,7 +90,7 @@ def main():
     squares = []
     for x in range(test.grid.shape[0]):
         for y in range(test.grid.shape[1]):
-            squares.append(pyglet.shapes.Rectangle(x*test.scale, y*test.scale, test.scale, test.scale, color=(55, 55, 255), batch=batch))
+            squares.append(pyglet.shapes.Rectangle(x*test.scale, y*test.scale, test.scale, test.scale, color=(153, 184, 152), batch=batch))
 
     # update the grid
     def update(dt):

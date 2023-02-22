@@ -5,6 +5,11 @@ import os
 import pyglet
 from pyglet import app
 from pyglet.window import Window
+from alchemist import Biome
+from alchemist import Cell
+import alchemist as alch
+
+
 
 ## create main window
 

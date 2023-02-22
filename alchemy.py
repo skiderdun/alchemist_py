@@ -48,10 +48,11 @@ import numpy.typing as npt
 class Biome():
     def __init__(self, grid: npt.NDArray[np.int8]):
         self.grid = grid
-    
+        self.val_grid = np.zeros(grid.shape, dtype=np.int8)
+
     def __repr__(self):
         return str(self.grid)
-
+    
     def run(self, generations: int):
         for i in range(generations):
             self.grid = self._update(self.grid)
@@ -84,6 +85,28 @@ class Biome():
                 grid[i[0], i[1]] = 0
         
         return grid
+    
+    def values(self, grid: npt.NDArray[np.int8]) -> npt.NDArray[np.int8]:
+        # get indices of all non-zero elements
+        indices = np.argwhere(grid == 1)
+   
+        # get the surrounding indices
+        surrounding_indices = np.array([[x + i, y + j] for x, y in indices for i in range(-1, 2) for j in range(-1, 2) if not (i == 0 and j == 0) ])
+      
+        # remove the indices that are out of bounds
+        surrounding_indices = surrounding_indices[(surrounding_indices[:, 0] >= 0) 
+                                                & (surrounding_indices[:, 0] < grid.shape[0])
+                                                & (surrounding_indices[:, 1] >= 0) 
+                                                & (surrounding_indices[:, 1] < grid.shape[1])]
+        
+        val_grid = grid.copy()
+
+        for i in np.unique(surrounding_indices, axis=0):
+            val_grid[i[0], i[1]] = np.sum(np.all(surrounding_indices == i, axis=1))
+        
+        return val_grid
+
+
 
 ############################################
 #

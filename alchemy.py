@@ -2,6 +2,7 @@ import pyglet
 pyglet.options['debug_gl'] = False
 import numpy as np
 import numpy.typing as npt
+import cProfile
 
 # Connway's Game of Life
 # http://en.wikipedia.org/wiki/Conway's_Game_of_Life
@@ -30,20 +31,41 @@ import numpy.typing as npt
 #
 ########################################################################################
 
-# Performace notes:
-# - use of functions rather than dict for lookup
-# - use of numpy arrays for grid
-# - abstract rules and neighbors to allow for different rulesets and neighbor counts
-# - abstraction also allows for greater speed (no need to check for neighbors that don't exist)
-# - use list comprehension for grid updates
 
 ############################################
 #
 #
-#   Cell: Optimized for speed
+#   Cell: A class for creating and storing cells
 #
 #
 ############################################
+# a cell is a 2d array of 0s and 1s
+# it is a premade cellular automata
+# each cell is a seed which may be applied to a grid which is applied to a biome
+class Cell():
+    def __init__(self, grid: npt.NDArray[np.int8]):
+        self.grid = grid
+
+    def __repr__(self):
+        return str(self.grid)
+
+    def apply(self, grid: npt.NDArray[np.int8], x: int, y: int) -> npt.NDArray[np.int8]:
+        """Apply the cell to the grid at the given x and y coordinates"""
+        grid[x:x+self.grid.shape[0], y:y+self.grid.shape[1]] = self.grid
+        return grid
+
+
+############################################
+#
+#
+#   Biome: Optimized for speed
+#
+#
+############################################
+
+# the game of life
+# https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life
+# a biome governs an indevidual grid
 
 class Biome():
     def __init__(self, grid: npt.NDArray[np.int8]):
@@ -106,67 +128,3 @@ class Biome():
         
         return val_grid
 
-
-
-############################################
-#
-#
-#   Main
-#
-#
-############################################
-
-def main():
-
-    # create the window
-    window = pyglet.window.Window(width=800, height=600, caption='Alchemy', resizable=True)
-    batch = pyglet.graphics.Batch()
-
-    # create the grid
-    grid = np.zeros((100, 100), dtype=np.int8)
-
-    # create a glider
-    grid[0, 1] = 1
-    grid[1, 2] = 1
-    grid[2, 0] = 1
-    grid[2, 1] = 1
-    grid[2, 2] = 1
-       
-
-    # create the biome
-    biome = Biome(grid)
-
-    # create solid color sprites
-    black = pyglet.image.SolidColorImagePattern((0, 0, 0, 255)).create_image(10, 10)
-    white = pyglet.image.SolidColorImagePattern((255, 255, 255, 255)).create_image(10, 10)
-    
-    sprites = []
-    for i in range(grid.shape[0]):
-        for j in range(grid.shape[1]):
-            if grid[i, j] == 1:
-                sprites.append(pyglet.sprite.Sprite(white, x=i*10, y=j*10, batch=batch))
-            else:
-                sprites.append(pyglet.sprite.Sprite(black, x=i*10, y=j*10, batch=batch))
-    
-    # update the sprites
-    def update(dt):
-        biome.run(1)
-        for i in range(biome.grid.shape[0]):
-            for j in range(biome.grid.shape[1]):
-                if grid[i, j] == 1:
-                    sprites[i*biome.grid.shape[0]+j].image = white
-                else:
-                    sprites[i*biome.grid.shape[0]+j].image = black
-
-    # draw the grid
-    @window.event
-    def on_draw():
-        window.clear()
-        batch.draw()
-
-    # run the game
-    pyglet.clock.schedule_interval(update, 1/10)
-    pyglet.app.run()
-
-if __name__ == '__main__':
-    main()

@@ -62,10 +62,7 @@ class Biome():
         indices = np.argwhere(grid == 1)
    
         # get the surrounding indices
-        surrounding_indices = np.array([indices + np.array([i, j]) for i in range(-1, 2) for j in range(-1, 2) if indices.shape[0] != 0])
-
-        # colapse the array
-        surrounding_indices = surrounding_indices.reshape(-1, 2)
+        surrounding_indices = np.array([[x + i, y + j] for x, y in indices for i in range(-1, 2) for j in range(-1, 2) if not (i == 0 and j == 0) ])
       
         # remove the indices that are out of bounds
         surrounding_indices = surrounding_indices[(surrounding_indices[:, 0] >= 0) 
@@ -73,18 +70,16 @@ class Biome():
                                                 & (surrounding_indices[:, 1] >= 0) 
                                                 & (surrounding_indices[:, 1] < grid.shape[1])]
 
-        # remove the indices that are the same as the original indices
-        surrounding_indices = surrounding_indices[(surrounding_indices[:, 0] != indices[:, 0]) | (surrounding_indices[:, 1] != indices[:, 1])]
-
-        # for each surrounding index that occures three times, set the biome to 1 
+        # for each surrounding index that occures three times, set the biome to 1
         for i in np.unique(surrounding_indices, axis=0):
             if np.sum(np.all(surrounding_indices == i, axis=1)) == 3:
                 grid[i[0], i[1]] = 1
-        
-        # set indices that are not surrounded by 2 or 3 cells to 0
-        for i in np.unique(indices, axis=0):
-            if np.sum(np.all(surrounding_indices == i, axis=1)) not in [2, 3]:
+            elif grid[i[0], i[1]] == 1 & np.sum(np.all(surrounding_indices == i, axis=1)) == 2:
+                grid[i[0], i[1]] = 1
+            else:
                 grid[i[0], i[1]] = 0
+        
+        return grid
 
 ############################################
 #
@@ -114,27 +109,27 @@ def main():
     # create the biome
     biome = Biome(grid)
 
-    # create the sprites
-    green = pyglet.image.SolidColorImagePattern((0, 255, 0, 255)).create_image(10, 10)
-    red = pyglet.image.SolidColorImagePattern((255, 0, 0, 255)).create_image(10, 10)
+    # create solid color sprites
+    black = pyglet.image.SolidColorImagePattern((0, 0, 0, 255)).create_image(10, 10)
+    white = pyglet.image.SolidColorImagePattern((255, 255, 255, 255)).create_image(10, 10)
     
     sprites = []
     for i in range(grid.shape[0]):
         for j in range(grid.shape[1]):
             if grid[i, j] == 1:
-                sprites.append(pyglet.sprite.Sprite(green, x=i*10, y=j*10, batch=batch))
+                sprites.append(pyglet.sprite.Sprite(white, x=i*10, y=j*10, batch=batch))
             else:
-                sprites.append(pyglet.sprite.Sprite(red, x=i*10, y=j*10, batch=batch))
+                sprites.append(pyglet.sprite.Sprite(black, x=i*10, y=j*10, batch=batch))
     
     # update the sprites
     def update(dt):
         biome.run(1)
-        for i in range(grid.shape[0]):
-            for j in range(grid.shape[1]):
+        for i in range(biome.grid.shape[0]):
+            for j in range(biome.grid.shape[1]):
                 if grid[i, j] == 1:
-                    sprites[i*grid.shape[0]+j].image = green
+                    sprites[i*biome.grid.shape[0]+j].image = white
                 else:
-                    sprites[i*grid.shape[0]+j].image = red
+                    sprites[i*biome.grid.shape[0]+j].image = black
 
     # draw the grid
     @window.event
@@ -143,7 +138,7 @@ def main():
         batch.draw()
 
     # run the game
-    pyglet.clock.schedule_interval(update, 1/5.0)
+    pyglet.clock.schedule_interval(update, 1/10)
     pyglet.app.run()
 
 if __name__ == '__main__':

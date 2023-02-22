@@ -48,6 +48,9 @@ import numpy.typing as npt
 class Biome():
     def __init__(self, grid: npt.NDArray[np.int8]):
         self.grid = grid
+    
+    def __repr__(self):
+        return str(self.grid)
 
     def run(self, generations: int):
         for i in range(generations):
@@ -71,10 +74,11 @@ class Biome():
                                                 & (surrounding_indices[:, 1] < grid.shape[1])]
 
         # for each surrounding index that occures three times, set the biome to 1
+        # for each surrounding index that occures three times, set the biome to 1
         for i in np.unique(surrounding_indices, axis=0):
             if np.sum(np.all(surrounding_indices == i, axis=1)) == 3:
                 grid[i[0], i[1]] = 1
-            elif grid[i[0], i[1]] == 1 & np.sum(np.all(surrounding_indices == i, axis=1)) == 2:
+            elif grid[i[0], i[1]] == 1 and np.sum(np.all(surrounding_indices == i, axis=1)) == 2:
                 grid[i[0], i[1]] = 1
             else:
                 grid[i[0], i[1]] = 0
@@ -98,13 +102,13 @@ def main():
     # create the grid
     grid = np.zeros((100, 100), dtype=np.int8)
 
-    # add a glider to center of grid
-    grid[50, 50] = 1
-    grid[51, 51] = 1
-    grid[51, 52] = 1
-    grid[50, 52] = 1
-    grid[49, 52] = 1
-    
+    # create a glider
+    grid[0, 1] = 1
+    grid[1, 2] = 1
+    grid[2, 0] = 1
+    grid[2, 1] = 1
+    grid[2, 2] = 1
+       
 
     # create the biome
     biome = Biome(grid)

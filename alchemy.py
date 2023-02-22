@@ -45,24 +45,57 @@ import numpy.typing as npt
 #
 ############################################
 
-# create a function to check the neighbors of a cell via list comprehension
-def quarum_sense(grid: npt.NDArray[np.int8], x: int, y: int) -> int:
-    return sum([grid[x-1, y-1], grid[x, y-1], grid[x+1, y-1],
-                grid[x-1, y], grid[x+1, y],
-                grid[x-1, y+1], grid[x, y+1], grid[x+1, y+1]])
+class Biome():
+    def __init__(self, grid: npt.NDArray[np.int8]):
+        self.grid = grid
 
-# create function to apply the rules via list comprehension
-def update_biome(grid: npt.NDArray[np.int8]) -> npt.NDArray[np.int8]:
-    return np.array(
-        [
-        [
-        1 if quarum_sense(grid, x, y)
-        in [2, 3] else 0
-        for x in range(1, grid.shape[0]-1)
+    def sense_quarum(self, x: int, y: int) -> int:
+        return sum([self.grid[x-1, y-1], self.grid[x, y-1], self.grid[x+1, y-1],
+                    self.grid[x-1, y], self.grid[x+1, y],
+                    self.grid[x-1, y+1], self.grid[x, y+1], self.grid[x+1, y+1]])
+
+    def get_alive_cells(self) -> npt.NDArray[np.int8]:
+        return np.array(np.where(self.grid == 1)).T
+
+    def get_neighbor_indices(self) -> npt.NDArray[np.int8]:
+        alive_cells = self.get_alive_cells()
+        neighbor_indices = np.array(
+            [
+            [alive_cells[:, 0]-1, alive_cells[:, 1]-1],
+            [alive_cells[:, 0], alive_cells[:, 1]-1],
+            [alive_cells[:, 0]+1, alive_cells[:, 1]-1],
+            [alive_cells[:, 0]-1, alive_cells[:, 1]],
+            [alive_cells[:, 0]+1, alive_cells[:, 1]],
+            [alive_cells[:, 0]-1, alive_cells[:, 1]+1],
+            [alive_cells[:, 0], alive_cells[:, 1]+1],
+            [alive_cells[:, 0]+1, alive_cells[:, 1]+1]
+            ]
+        ).T
+        return neighbor_indices
+
+    def apply_rules(self) -> npt.NDArray[np.int8]:
+        neighbor_indices = self.get_neighbor_indices()
+        neighbor_indices = neighbor_indices.reshape(-1, 2)
+        neighbor_indices = np.unique(neighbor_indices, axis=0)
+        neighbor_indices = neighbor_indices[
+            (neighbor_indices[:, 0] >= 0) &
+            (neighbor_indices[:, 0] < self.grid.shape[0]) &
+            (neighbor_indices[:, 1] >= 0) &
+            (neighbor_indices[:, 1] < self.grid.shape[1])
         ]
-        for y in range(1, grid.shape[1]-1)
-        ]
-    )
+        neighbor_counts = np.zeros(self.grid.shape, dtype=np.int8)
+        for i in range(neighbor_indices.shape[0]):
+            neighbor_counts[neighbor_indices[i, 0], neighbor_indices[i, 1]] = \
+                self.sense_quarum(neighbor_indices[i, 0], neighbor_indices[i, 1])
+        return np.where(
+            (neighbor_counts == 3) |
+            (neighbor_counts == 2) & (self.grid == 1),
+            1, 0
+        )
+    
+    def run(self, n: int) -> None:
+        for i in range(n):
+            self.grid = self.apply_rules()
 
 
 
@@ -76,31 +109,45 @@ def update_biome(grid: npt.NDArray[np.int8]) -> npt.NDArray[np.int8]:
 
 def main():
 
-    # test array: 
-    test_seed = np.random.randint(0, 2, size=(10, 10))
-
-    test = Biome(1, test_seed, Cell(test_seed).update, size=800, scale=8)
-
-
-    # create a window
-    window = pyglet.window.Window(width=800, height=800)
+    # create the window
+    window = pyglet.window.Window(width=800, height=600, caption='Alchemy', resizable=True)
     batch = pyglet.graphics.Batch()
 
-    # create a grid of squares
-    squares = []
-    for x in range(test.grid.shape[0]):
-        for y in range(test.grid.shape[1]):
-            squares.append(pyglet.shapes.Rectangle(x*test.scale, y*test.scale, test.scale, test.scale, color=(153, 184, 152), batch=batch))
+    # create the grid
+    grid = np.zeros((100, 100), dtype=np.int8)
 
-    # update the grid
+    # add a glider to center of grid
+    grid[50, 50] = 1
+    grid[51, 51] = 1
+    grid[51, 52] = 1
+    grid[50, 52] = 1
+    grid[49, 52] = 1
+    
+
+    # create the biome
+    biome = Biome(grid)
+
+    # create the sprites
+    green = pyglet.image.SolidColorImagePattern((0, 255, 0, 255)).create_image(10, 10)
+    red = pyglet.image.SolidColorImagePattern((255, 0, 0, 255)).create_image(10, 10)
+    
+    sprites = []
+    for i in range(grid.shape[0]):
+        for j in range(grid.shape[1]):
+            if grid[i, j] == 1:
+                sprites.append(pyglet.sprite.Sprite(green, x=i*10, y=j*10, batch=batch))
+            else:
+                sprites.append(pyglet.sprite.Sprite(red, x=i*10, y=j*10, batch=batch))
+    
+    # update the sprites
     def update(dt):
-        test.grid = test.update()
-        for x in range(test.grid.shape[0]):
-            for y in range(test.grid.shape[1]):
-                if test.grid[x,y] == 0:
-                    squares[x+y*test.grid.shape[0]].color = (153, 184, 152)
+        biome.run(1)
+        for i in range(grid.shape[0]):
+            for j in range(grid.shape[1]):
+                if grid[i, j] == 1:
+                    sprites[i*grid.shape[0]+j].image = green
                 else:
-                    squares[x+y*test.grid.shape[0]].color = (254, 206, 171)
+                    sprites[i*grid.shape[0]+j].image = red
 
     # draw the grid
     @window.event

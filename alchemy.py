@@ -49,55 +49,42 @@ class Biome():
     def __init__(self, grid: npt.NDArray[np.int8]):
         self.grid = grid
 
-    def sense_quarum(self, x: int, y: int) -> int:
-        return sum([self.grid[x-1, y-1], self.grid[x, y-1], self.grid[x+1, y-1],
-                    self.grid[x-1, y], self.grid[x+1, y],
-                    self.grid[x-1, y+1], self.grid[x, y+1], self.grid[x+1, y+1]])
+    def run(self, generations: int):
+        for i in range(generations):
+            self.grid = self._update(self.grid)
+        
+    def _update(self, grid: npt.NDArray[np.int8]) -> npt.NDArray[np.int8]:
+        
+        if np.sum(grid) == 0:
+            return grid
 
-    def get_alive_cells(self) -> npt.NDArray[np.int8]:
-        return np.array(np.where(self.grid == 1)).T
+        # get indices of all non-zero elements
+        indices = np.argwhere(grid == 1)
+   
+        # get the surrounding indices
+        surrounding_indices = np.array([indices + np.array([i, j]) for i in range(-1, 2) for j in range(-1, 2) if indices.shape[0] != 0])
 
-    def get_neighbor_indices(self) -> npt.NDArray[np.int8]:
-        alive_cells = self.get_alive_cells()
-        neighbor_indices = np.array(
-            [
-            [alive_cells[:, 0]-1, alive_cells[:, 1]-1],
-            [alive_cells[:, 0], alive_cells[:, 1]-1],
-            [alive_cells[:, 0]+1, alive_cells[:, 1]-1],
-            [alive_cells[:, 0]-1, alive_cells[:, 1]],
-            [alive_cells[:, 0]+1, alive_cells[:, 1]],
-            [alive_cells[:, 0]-1, alive_cells[:, 1]+1],
-            [alive_cells[:, 0], alive_cells[:, 1]+1],
-            [alive_cells[:, 0]+1, alive_cells[:, 1]+1]
-            ]
-        ).T
-        return neighbor_indices
+        # colapse the array
+        surrounding_indices = surrounding_indices.reshape(-1, 2)
+      
+        # remove the indices that are out of bounds
+        surrounding_indices = surrounding_indices[(surrounding_indices[:, 0] >= 0) 
+                                                & (surrounding_indices[:, 0] < grid.shape[0])
+                                                & (surrounding_indices[:, 1] >= 0) 
+                                                & (surrounding_indices[:, 1] < grid.shape[1])]
 
-    def apply_rules(self) -> npt.NDArray[np.int8]:
-        neighbor_indices = self.get_neighbor_indices()
-        neighbor_indices = neighbor_indices.reshape(-1, 2)
-        neighbor_indices = np.unique(neighbor_indices, axis=0)
-        neighbor_indices = neighbor_indices[
-            (neighbor_indices[:, 0] >= 0) &
-            (neighbor_indices[:, 0] < self.grid.shape[0]) &
-            (neighbor_indices[:, 1] >= 0) &
-            (neighbor_indices[:, 1] < self.grid.shape[1])
-        ]
-        neighbor_counts = np.zeros(self.grid.shape, dtype=np.int8)
-        for i in range(neighbor_indices.shape[0]):
-            neighbor_counts[neighbor_indices[i, 0], neighbor_indices[i, 1]] = \
-                self.sense_quarum(neighbor_indices[i, 0], neighbor_indices[i, 1])
-        return np.where(
-            (neighbor_counts == 3) |
-            (neighbor_counts == 2) & (self.grid == 1),
-            1, 0
-        )
-    
-    def run(self, n: int) -> None:
-        for i in range(n):
-            self.grid = self.apply_rules()
+        # remove the indices that are the same as the original indices
+        surrounding_indices = surrounding_indices[(surrounding_indices[:, 0] != indices[:, 0]) | (surrounding_indices[:, 1] != indices[:, 1])]
 
-
+        # for each surrounding index that occures three times, set the biome to 1 
+        for i in np.unique(surrounding_indices, axis=0):
+            if np.sum(np.all(surrounding_indices == i, axis=1)) == 3:
+                grid[i[0], i[1]] = 1
+        
+        # set indices that are not surrounded by 2 or 3 cells to 0
+        for i in np.unique(indices, axis=0):
+            if np.sum(np.all(surrounding_indices == i, axis=1)) not in [2, 3]:
+                grid[i[0], i[1]] = 0
 
 ############################################
 #

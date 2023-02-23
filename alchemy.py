@@ -98,6 +98,7 @@ class Biome():
 
         # for each surrounding index that occures three times, set the biome to 1
         # for each surrounding index that occures three times, set the biome to 1
+        ## note: np.all() is the most expensive operation in this function ()
         for i in np.unique(surrounding_indices, axis=0):
             if np.sum(np.all(surrounding_indices == i, axis=1)) == 3:
                 grid[i[0], i[1]] = 1
@@ -128,3 +129,83 @@ class Biome():
         
         return val_grid
 
+def gosper_glider_gun():
+    grid = np.zeros((50, 50), dtype=np.int8)
+    grid[5, 1] = 1
+    grid[5, 2] = 1
+    grid[6, 1] = 1
+    grid[6, 2] = 1
+
+    grid[5, 11] = 1
+    grid[5, 12] = 1
+    grid[6, 11] = 1
+    grid[6, 12] = 1
+    grid[7, 11] = 1
+    grid[7, 12] = 1
+
+    grid[4, 13] = 1
+    grid[3, 14] = 1
+    grid[3, 15] = 1
+    grid[2, 15] = 1
+    grid[2, 14] = 1
+    grid[1, 14] = 1
+
+    grid[4, 17] = 1
+    grid[3, 17] = 1
+    grid[2, 17] = 1
+    grid[4, 18] = 1
+    grid[3, 18] = 1
+    grid[2, 18] = 1
+    grid[1, 18] = 1
+    grid[5, 19] = 1
+    grid[1, 19] = 1
+
+    grid[6, 21] = 1
+    grid[5, 21] = 1
+    grid[4, 21] = 1
+    grid[6, 22] = 1
+    grid[5, 22] = 1
+    grid[4, 22] = 1
+    grid[3, 22] = 1
+    grid[2, 22] = 1
+    grid[3, 23] = 1
+    grid[2, 23] = 1
+
+    grid[7, 25] = 1
+    grid[6, 25] = 1
+    grid[5, 25] = 1
+    grid[7, 26] = 1
+    grid[6, 26] = 1
+    grid[5, 26] = 1
+
+    return grid
+
+
+import os
+import time
+import matplotlib.pyplot as plt
+class DisplayWidget():
+    """Run the game of life in a window"""
+    def __init__(self, grid: npt.NDArray[np.int8]):
+        self.grid = grid
+        self.biome = Biome(grid)
+        self.fig, self.ax = plt.subplots()
+        self.fig.show()
+        self.fig.canvas.draw()
+        self.fig.canvas.flush_events()
+    
+    def run(self):
+        while True:
+            time.sleep(0.1)
+            self.grid = self.biome._update(self.grid)
+            self.ax.clear()
+            self.ax.imshow(self.grid)
+            self.fig.canvas.draw()
+            self.fig.canvas.flush_events()
+
+
+
+if __name__ == '__main__':
+    grid = gosper_glider_gun()
+    game = DisplayWidget(grid)
+    game.run()

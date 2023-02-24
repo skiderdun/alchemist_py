@@ -97,8 +97,10 @@ class Biome():
         each_indices = np.unique(surrounding_indices, axis=0)
 
         # set the surrounding indices to 1 if they have 3 neighbours
-        grid[each_indices[:, 0], each_indices[:, 1]] = [1 if np.sum(np.all(surrounding_indices == i, axis=1)) == 3 else grid[i] for i in each_indices]
-        grid[indices[:, 0], indices[:, 1]] = [1 if np.sum(np.all(surrounding_indices == i, axis=1)) == 2 else 0 for i in np.unique(indices, axis=0)]
+        grid[indices[:, 0], indices[:, 1]] = [1 if np.sum(np.all(surrounding_indices == i, axis=1)) == 2 else 0
+                                            for i in np.unique(indices, axis=0)]
+        grid[each_indices[:, 0], each_indices[:, 1]] = [grid[i[0], i[1]] if np.sum(np.all(surrounding_indices == i, axis=1)) != 3 else 1 
+                                            for i in each_indices]
         
         return grid
     
@@ -131,11 +133,11 @@ class Biome():
 #
 ############################################
 
-seed = np.random.randint(0, 2, (100, 100), dtype=np.int8)
+seed = np.random.randint(0, 2, (10, 10), dtype=np.int8)
 
-grid = np.zeros((1000, 1000), dtype=np.int8)
+grid = np.zeros((100, 100), dtype=np.int8)
 
-grid[100:200, 100:200] = seed
+grid[50:60, 50:60] = seed
 
 
 import os

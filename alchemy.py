@@ -81,9 +81,6 @@ class Biome():
         
     def _update(self, grid: npt.NDArray[np.int8]) -> npt.NDArray[np.int8]:
         
-        if np.sum(grid) == 0:
-            return grid
-
         # get indices of all non-zero elements
         indices = np.argwhere(grid == 1)
    
@@ -96,16 +93,12 @@ class Biome():
                                                 & (surrounding_indices[:, 1] >= 0) 
                                                 & (surrounding_indices[:, 1] < grid.shape[1])]
 
-        # for each surrounding index that occures three times, set the biome to 1
-        # for each surrounding index that occures three times, set the biome to 1
-        ## note: np.all() is the most expensive operation in this function ()
-        for i in np.unique(surrounding_indices, axis=0):
-            if np.sum(np.all(surrounding_indices == i, axis=1)) == 3:
-                grid[i[0], i[1]] = 1
-            elif grid[i[0], i[1]] == 1 and np.sum(np.all(surrounding_indices == i, axis=1)) == 2:
-                grid[i[0], i[1]] = 1
-            else:
-                grid[i[0], i[1]] = 0
+        # get the unique surrounding indices
+        each_indices = np.unique(surrounding_indices, axis=0)
+
+        # set the surrounding indices to 1 if they have 3 neighbours
+        grid[each_indices[:, 0], each_indices[:, 1]] = [1 if np.sum(np.all(surrounding_indices == i, axis=1)) == 3 else 0 for i in each_indices]
+        grid[indices[:, 0], indices[:, 1]] = [1 if np.sum(np.all(surrounding_indices == i, axis=1)) == 2 else 0 for i in np.unique(indices, axis=0)]
         
         return grid
     
@@ -129,56 +122,20 @@ class Biome():
         
         return val_grid
 
-def gosper_glider_gun():
-    grid = np.zeros((50, 50), dtype=np.int8)
-    grid[5, 1] = 1
-    grid[5, 2] = 1
-    grid[6, 1] = 1
-    grid[6, 2] = 1
 
-    grid[5, 11] = 1
-    grid[5, 12] = 1
-    grid[6, 11] = 1
-    grid[6, 12] = 1
-    grid[7, 11] = 1
-    grid[7, 12] = 1
+############################################
+#
+#
+#   DisplayWidget: A class for displaying the game of life in a window
+#
+#
+############################################
 
-    grid[4, 13] = 1
-    grid[3, 14] = 1
-    grid[3, 15] = 1
-    grid[2, 15] = 1
-    grid[2, 14] = 1
-    grid[1, 14] = 1
+seed = np.random.randint(0, 2, (100, 100), dtype=np.int8)
 
-    grid[4, 17] = 1
-    grid[3, 17] = 1
-    grid[2, 17] = 1
-    grid[4, 18] = 1
-    grid[3, 18] = 1
-    grid[2, 18] = 1
-    grid[1, 18] = 1
-    grid[5, 19] = 1
-    grid[1, 19] = 1
+grid = np.zeros((1000, 1000), dtype=np.int8)
 
-    grid[6, 21] = 1
-    grid[5, 21] = 1
-    grid[4, 21] = 1
-    grid[6, 22] = 1
-    grid[5, 22] = 1
-    grid[4, 22] = 1
-    grid[3, 22] = 1
-    grid[2, 22] = 1
-    grid[3, 23] = 1
-    grid[2, 23] = 1
-
-    grid[7, 25] = 1
-    grid[6, 25] = 1
-    grid[5, 25] = 1
-    grid[7, 26] = 1
-    grid[6, 26] = 1
-    grid[5, 26] = 1
-
-    return grid
+grid[100:200, 100:200] = seed
 
 
 import os
@@ -206,6 +163,5 @@ class DisplayWidget():
 
 
 if __name__ == '__main__':
-    grid = gosper_glider_gun()
     game = DisplayWidget(grid)
     game.run()

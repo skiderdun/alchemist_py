@@ -39,6 +39,7 @@ import cProfile
 #
 #
 ############################################
+
 # a cell is a 2d array of 0s and 1s
 # it is a premade cellular automata
 # each cell is a seed which may be applied to a grid which is applied to a biome
@@ -53,7 +54,6 @@ class Cell():
         """Apply the cell to the grid at the given x and y coordinates"""
         grid[x:x+self.grid.shape[0], y:y+self.grid.shape[1]] = self.grid
         return grid
-
 
 ############################################
 #
@@ -85,7 +85,10 @@ class Biome():
         indices = np.argwhere(grid == 1)
    
         # get the surrounding indices
-        surrounding_indices = np.array([[x + i, y + j] for x, y in indices for i in range(-1, 2) for j in range(-1, 2) if not (i == 0 and j == 0) ])
+        surrounding_indices = np.array([[x + i, y + j] 
+                                        for x, y in indices 
+                                        for i in range(-1, 2) 
+                                        for j in range(-1, 2) if not (i == 0 and j == 0) ])
       
         # remove the indices that are out of bounds
         surrounding_indices = surrounding_indices[(surrounding_indices[:, 0] >= 0) 
@@ -109,7 +112,11 @@ class Biome():
         indices = np.argwhere(grid == 1)
    
         # get the surrounding indices
-        surrounding_indices = np.array([[x + i, y + j] for x, y in indices for i in range(-1, 2) for j in range(-1, 2) if not (i == 0 and j == 0) ])
+        surrounding_indices = np.array([[x + i, y + j] 
+                                        for x, y in indices 
+                                        for i in range(-1, 2) 
+                                        for j in range(-1, 2) 
+                                        if not (i == 0 and j == 0) ])
       
         # remove the indices that are out of bounds
         surrounding_indices = surrounding_indices[(surrounding_indices[:, 0] >= 0) 

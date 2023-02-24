@@ -97,7 +97,7 @@ class Biome():
         each_indices = np.unique(surrounding_indices, axis=0)
 
         # set the surrounding indices to 1 if they have 3 neighbours
-        grid[each_indices[:, 0], each_indices[:, 1]] = [1 if np.sum(np.all(surrounding_indices == i, axis=1)) == 3 else 0 for i in each_indices]
+        grid[each_indices[:, 0], each_indices[:, 1]] = [1 if np.sum(np.all(surrounding_indices == i, axis=1)) == 3 else grid[i] for i in each_indices]
         grid[indices[:, 0], indices[:, 1]] = [1 if np.sum(np.all(surrounding_indices == i, axis=1)) == 2 else 0 for i in np.unique(indices, axis=0)]
         
         return grid

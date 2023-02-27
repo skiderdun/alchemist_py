@@ -67,7 +67,7 @@ class Cell():
 # https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life
 # a biome governs an indevidual grid
 
-class Biome():
+class ConnwaysGameOfLife():
     def __init__(self, grid: npt.NDArray[np.int8]):
         self.grid = grid
         self.val_grid = np.zeros(grid.shape, dtype=np.int8)
@@ -154,7 +154,7 @@ class DisplayWidget():
     """Run the game of life in a window"""
     def __init__(self, grid: npt.NDArray[np.int8]):
         self.grid = grid
-        self.biome = Biome(grid)
+        self.biome = ConnwaysGameOfLife(grid)
         self.fig, self.ax = plt.subplots()
         self.fig.show()
         self.fig.canvas.draw()
